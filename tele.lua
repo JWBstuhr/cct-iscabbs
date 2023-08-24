@@ -146,7 +146,7 @@ local function keyCheck()
             end
             if k == "three" and state == 1 then
                 print("C[Login Sent]")
-                n.send("JWBstuhr\10".."869194\10".."Y",false)
+                n.send("USERNAME\10".."PASSWORD\10".."Y",false)
             end
             if k == "four" and state == 1 then
                 print("Switched to Standard Keyboard.")

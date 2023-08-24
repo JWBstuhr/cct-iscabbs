@@ -22,11 +22,16 @@ local nUrl = "wss://p-us-east.ftelnet.ca/".. address.url .."/".. address.port
 -- Get ourselves that lovely fTelnet websocket
 local n = http.websocket(nUrl)
 
+local w,h = term.getSize()
+if w < 80 then
+    h = h/2
+end
+
 local cfg = {
     termType = "ansi", -- Completely unused.
     -- Little goofy Telnet negotiation messages. I only prepared for ISCABBS.
     -- Also, ISCABBS is a cunt and refuses to acknowledge the 51 char page size, so I'm halving the height to account for possible newlines.
-    msg1 = "\255\252\36".."\255\252\1".."\255\251\31".."\255\250\31\0\51\0\30\255\240".."\255\252\44",
+    msg1 = "\255\252\36".."\255\252\1".."\255\251\31".."\255\250\31\0\51\0"..string.char(h).."\255\240".."\255\252\44",
     msg2 = "\255\253\3".."\255\251\46".."\255\251\8".."\255\250\8\51\255\240",
 }
 -- Thingy for counting MSGs sent for negotiation. Completely arbitrary, as this client can't actually negotiate.
@@ -58,6 +63,18 @@ local ansiColors = {
     c37 = colors.white,
 
 }
+
+-- [24.VIII.2023 UPDATE: term resize]
+local function checkResize()
+    while true do
+        os.pullEvent()
+        local w,h = term.getSize()
+        if w < 80 then
+            h = h/2
+        end
+        n.send("\255\251\31".."\255\250\31\0\51\0"..string.char(h).."\255\240",false)
+    end
+end
 
 -- Hehehe I got a little lazy.
 local function ansiPrint(text)
@@ -236,4 +253,4 @@ term.clear()
 term.setCursorPos(1,1)
 term.setBackgroundColor(colors.black)
 term.setTextColor(colors.white)
-parallel.waitForAny(keyCheck,charCheck,render,checkEnd)
+parallel.waitForAny(keyCheck,charCheck,render,checkEnd,checkResize)
